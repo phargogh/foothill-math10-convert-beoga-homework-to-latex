@@ -90,10 +90,13 @@ def generate_latex(source_html_path):
             output_string += '\\bigskip\n\n'
             output_string += '\\begin{enumerate}[itemsep=0em]\n'
 
-            for line in re.split('\([a-z]\)', section.text.strip()):
+            for line in re.split('\n\([a-z]\)', section.text.strip()):
                 line = line.replace('\n', ' ').strip()
                 if not line:
                     continue
+
+                if line.startswith('(a)'):
+                    line = line[4:]
 
                 output_string += f'\\item {escape(line.strip())}\n'
             output_string += '\\end{enumerate}\n'
