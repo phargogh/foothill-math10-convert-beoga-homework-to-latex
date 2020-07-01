@@ -27,6 +27,7 @@ def generate_latex(source_html_path):
     output_string += '\\usepackage{graphicx}\n'
     output_string += '\\usepackage[space]{grffile}\n'
     output_string += '\\usepackage{enumitem}\n'
+    output_string += '\\renewcommand{\\theenumi}{\\alph{enumi}}\n'
     output_string += '\\begin{document}\n'
 
     title = soup.h1.text.replace(' - ', ' \\textemdash{} ').strip()
