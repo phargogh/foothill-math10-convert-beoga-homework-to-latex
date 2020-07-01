@@ -1,3 +1,5 @@
+import sys
+
 from bs4 import BeautifulSoup
 
 
@@ -8,8 +10,8 @@ def is_question(paragraph):
         return True
 
 
-if __name__ == '__main__':
-    soup = BeautifulSoup(open('Homework Chapter 1.html').read(), 'html.parser')
+def generate_latex(source_html_path):
+    soup = BeautifulSoup(open(source_html_path).read(), 'html.parser')
     print(r'\documentclass[a4paper, twoside, 11pt]{article}' + '\n')
     print(r'\begin{document}' + '\n')
 
@@ -27,6 +29,10 @@ if __name__ == '__main__':
             print('\\begin{enumerate}')
             print('\\itemsep0em\n')  # limit space between items
             for line in paragraph.text.strip().split('\n'):
-                print(f'  \\item {line.strip()}\n')
+                print(f'  \\item {line.strip()}')
             print('\\end{enumerate}\n')
     print('\\end{document}')
+
+
+if __name__ == '__main__':
+    generate_latex(sys.argv[1])
