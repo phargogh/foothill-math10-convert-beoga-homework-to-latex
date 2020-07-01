@@ -1,3 +1,5 @@
+import os
+import re
 import sys
 import html
 import urllib.parse
@@ -24,6 +26,7 @@ def generate_latex(source_html_path):
     output_string += '\\documentclass[a4paper, twoside, 11pt]{article}\n'
     output_string += '\\usepackage{graphicx}\n'
     output_string += '\\usepackage[space]{grffile}\n'
+    output_string += '\\usepackage{enumitem}\n'
     output_string += '\\begin{document}\n'
 
     title = soup.h1.text.replace(' - ', ' \\textemdash{} ').strip()
@@ -40,17 +43,22 @@ def generate_latex(source_html_path):
         elif paragraph.img:  # will be None if not here.
             img_src = (urllib.parse.unquote(
                 html.unescape(paragraph.img['src'])))
-            import os
             file_path, ext = os.path.splitext(img_src)
             output_string += '\\begin{center}\n'
             output_string += (
-                f'\\includegraphics[scale=1]{{./{{{file_path}}}{ext}}}\n')
+                f'\\includegraphics[width=10cm]{{./{{{file_path}}}{ext}}}\n')
             output_string += '\\end{center}\n'
         else:
             output_string += '\\bigskip\n\n'
             output_string += '\\begin{enumerate}[itemsep=0em]\n'
-            for line in paragraph.text.strip().split('\n'):
-                output_string += f'  \\item {escape(line.strip())}\n'
+
+            for line in re.split('\([a-z]\)', paragraph.text.strip()):
+                line = line.replace('\n', ' ').strip()
+                if not line:
+                    continue
+
+                #for line in paragraph.text.strip().split('\n'):
+                output_string += f'\\item {escape(line.strip())}\n'
             output_string += '\\end{enumerate}\n'
     output_string += '\\end{document}'
 
