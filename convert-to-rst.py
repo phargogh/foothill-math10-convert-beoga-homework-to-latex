@@ -27,12 +27,10 @@ def generate_latex(source_html_path):
     output_string += '\\usepackage{graphicx}\n'
     output_string += '\\usepackage[space]{grffile}\n'
     output_string += '\\usepackage{enumitem}\n'
-    #output_string += '\\usepackage{float}\n'
-    #output_string += '\\restylefloat{table}\n'
     output_string += '\\renewcommand{\\theenumi}{\\alph{enumi}}\n'
     output_string += '\\begin{document}\n'
 
-    title = soup.h1.text.replace(' - ', ' \\textemdash{} ').strip()
+    title = escape(soup.h1.text).replace(' - ', ' \\textemdash{} ').strip()
 
     index = -1
     for section in soup.html.body.children:
@@ -66,17 +64,23 @@ def generate_latex(source_html_path):
             output_string += f'\\caption{{{section.caption.text.strip()}}}\n'
 
             # Add one extra column for the label.
+            first_row = section.tbody.find_all('tr')[0]
+
             n_cols = '|'.join(['c'] * (
-                len(section.tbody.find_all('tr')[0].find_all('td')) + 1))
+                len(first_row.find_all('th')) + len(first_row.find_all('td'))))
+
             n_rows = len(section.tbody.find_all('tr'))
             output_string += f'\\begin{{tabular}}{{{n_cols}}}\n'
             output_string += '\\hline\n'
 
             for row_index, row in enumerate(section.tbody.find_all('tr')):
-                row_string = f'\\textbf{{{escape(row.th.text)}}}'
-                for field in row.find_all('td'):
-                    row_string += f' & {escape(field.text)}'
-                output_string += row_string
+                row_data = []
+                for field_index, field in enumerate(row.find_all()):
+                    if field.name == 'th':
+                        row_data.append(f' \\textbf{{{escape(field.text)}}}')
+                    else:
+                        row_data.append(f' {escape(field.text)}')
+                output_string += ' & '.join(row_data)
 
                 # Can only have tex linebreaks before the end of the last row.
                 if row_index < (n_rows - 1):
