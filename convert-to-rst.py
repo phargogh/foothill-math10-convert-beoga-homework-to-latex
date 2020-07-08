@@ -49,7 +49,7 @@ def generate_latex(source_html_path):
             output_string += '\\bigskip\n'
             output_string += f'{escape(section.text)}\n'
 
-        elif section.img:
+        elif section.img or section.name == 'img':
             img_src = (urllib.parse.unquote(
                 html.unescape(section.img['src'])))
             file_path, ext = os.path.splitext(img_src)
@@ -58,22 +58,27 @@ def generate_latex(source_html_path):
                 f'\\includegraphics[width=10cm]{{./{{{file_path}}}{ext}}}\n')
             output_string += '\\end{center}\n'
 
-        elif section.name == 'table':
+        elif section.name == 'table' or section.table:
             output_string += '\\begin{table}[h]\n'
             output_string += '\\centering\n'
             output_string += f'\\caption{{{section.caption.text.strip()}}}\n'
 
+            if section.name == 'table':
+                table = section
+            else:
+                table = section.table
+
             # Add one extra column for the label.
-            first_row = section.tbody.find_all('tr')[0]
+            first_row = table.tbody.find_all('tr')[0]
 
             n_cols = '|'.join(['c'] * (
                 len(first_row.find_all('th')) + len(first_row.find_all('td'))))
 
-            n_rows = len(section.tbody.find_all('tr'))
+            n_rows = len(table.tbody.find_all('tr'))
             output_string += f'\\begin{{tabular}}{{{n_cols}}}\n'
             output_string += '\\hline\n'
 
-            for row_index, row in enumerate(section.tbody.find_all('tr')):
+            for row_index, row in enumerate(table.tbody.find_all('tr')):
                 row_data = []
                 for field_index, field in enumerate(row.find_all()):
                     if field.name == 'th':
